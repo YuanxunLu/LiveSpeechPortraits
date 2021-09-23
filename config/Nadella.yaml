@@ -1,0 +1,32 @@
+model_params:
+    APC:
+        ckp_path: './data/APC_epoch_160.model'
+        mel_dim: 80
+        hidden_size: 512
+        num_layers: 3
+        residual: false
+        use_LLE: 1
+        Knear: 10
+        LLE_percent: 1
+    Audio2Mouth:
+        ckp_path: './data/Nadella/checkpoints/Audio2Feature.pkl'
+        smooth: 2
+        AMP: ['XYZ', 1.5, 1.5, 1.5]  # method, x, y, z
+    Headpose:
+        ckp_path: './data/Nadella/checkpoints/Audio2Headpose.pkl'
+        sigma: 0.3
+        smooth: [5, 10]    # rot, trans
+        AMP: [0.5, 0.5]    # rot, trans
+        shoulder_AMP: 0.5
+    Image2Image:
+        ckp_path: './data/Nadella/checkpoints/Feature2Face.pkl'
+        size: 'normal'
+        save_input: 1
+        
+
+dataset_params:
+  root: './data/Nadella/'
+  fit_data_path: './data/Nadella/3d_fit_data.npz'
+  pts3d_path: './data/Nadella/tracked3D_normalized_pts_fix_contour.npy'
+
+

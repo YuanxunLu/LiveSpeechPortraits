@@ -1,0 +1,10 @@
+tqdm
+librosa
+scikit_image
+opencv_python
+scipy
+dominate
+albumentations
+numpy
+beautifulsoup4
+skimage
