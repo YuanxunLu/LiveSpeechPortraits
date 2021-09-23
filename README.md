@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ## Demo
 
-- Download the pre-trained models and data from [Google Drive]() to the folder `data`.  Five subjects data are released (May, Obama1, Obama2, Nadella and McStay).
+- Download the pre-trained models and data from [Google Drive]() to the `data` folder.  Five subjects data are released (May, Obama1, Obama2, Nadella and McStay).
 
 - Run the demo:
 
