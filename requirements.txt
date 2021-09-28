@@ -1,5 +1,5 @@
 tqdm
-librosa
+librosa==0.7.0
 scikit_image
 opencv_python
 scipy
