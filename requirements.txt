@@ -7,4 +7,4 @@ dominate
 albumentations
 numpy
 beautifulsoup4
-skimage
+scikit-image
