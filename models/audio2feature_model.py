@@ -139,7 +139,7 @@ class Audio2FeatureModel(BaseModel):
         self.Audio2Feature.eval()
                 
         with torch.no_grad():
-            input = torch.from_numpy(audio_feats).unsqueeze(0).float().cuda() 
+            input = torch.from_numpy(audio_feats).unsqueeze(0).float().to(self.device)
             preds = self.Audio2Feature.forward(input)
             
             # drop first frame future results

@@ -33,7 +33,14 @@ class BaseModel(ABC):
         self.opt = opt
         self.gpu_ids = opt.gpu_ids
         self.isTrain = opt.isTrain
-        self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if self.gpu_ids else torch.device('cpu')  # get device name: CPU or GPU
+        # get device name: CPU or GPU
+        # if self.gpu_ids == '-1':
+        #     self.device = torch.device('cpu')
+        #     self.gpu_ids = opt.gpu_ids == []
+        # else:
+        #     self.device = torch.device('cuda:{}'.format(self.gpu_ids[0]))
+        self.device = torch.device('cuda:{}'.format(self.gpu_ids[0])) if len(self.gpu_ids) > 0 else torch.device('cpu')  
+        
         self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)  # save all the checkpoints to save_dir
         # torch speed up training
         torch.backends.cudnn.enabled = True
@@ -203,6 +210,9 @@ class BaseModel(ABC):
 #                    net = net.module
                 if os.path.exists(load_path):
                     state_dict = torch.load(load_path, map_location=str(self.device))
+                    if self.device == torch.device('cpu'):
+                        for key in list(state_dict.keys()):
+                            state_dict[key[7:]] = state_dict.pop(key)
                     if hasattr(state_dict, '_metadata'):
                         del state_dict._metadata
                     print('loading the model from %s' % load_path)

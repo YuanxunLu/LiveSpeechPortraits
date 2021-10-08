@@ -152,13 +152,13 @@ class Audio2HeadposeModel(BaseModel):
             # fill zero or not
             if fill_zero == True:
                 # headpose
-                audio_feats_insert = np.repeat(audio_feats[0], self.Audio2Headpose.module.WaveNet.receptive_field - 1)
-                audio_feats_insert = audio_feats_insert.reshape(-1, self.Audio2Headpose.module.WaveNet.receptive_field - 1).T
+                audio_feats_insert = np.repeat(audio_feats[0], opt.A2H_receptive_field - 1)
+                audio_feats_insert = audio_feats_insert.reshape(-1, opt.A2H_receptive_field - 1).T
                 audio_feats = np.concatenate([audio_feats_insert, audio_feats])
                 # history headpose
-                history_headpose = np.repeat(pre_headpose, self.Audio2Headpose.module.WaveNet.receptive_field)
-                history_headpose = history_headpose.reshape(-1, self.Audio2Headpose.module.WaveNet.receptive_field).T
-                history_headpose = torch.from_numpy(history_headpose).unsqueeze(0).float().cuda()
+                history_headpose = np.repeat(pre_headpose, opt.A2H_receptive_field)
+                history_headpose = history_headpose.reshape(-1, opt.A2H_receptive_field).T
+                history_headpose = torch.from_numpy(history_headpose).unsqueeze(0).float().to(self.device)
                 infer_start = 0   
             else:
                 return None     
@@ -169,8 +169,8 @@ class Audio2HeadposeModel(BaseModel):
             with torch.no_grad():
                 for i in tqdm(range(infer_start, nframe), desc='generating headpose'):
                     history_start = i - infer_start
-                    input_audio_feats = audio_feats[history_start + frame_future: history_start + frame_future + self.Audio2Headpose.module.WaveNet.receptive_field]
-                    input_audio_feats = torch.from_numpy(input_audio_feats).unsqueeze(0).float().cuda() 
+                    input_audio_feats = audio_feats[history_start + frame_future: history_start + frame_future + opt.A2H_receptive_field]
+                    input_audio_feats = torch.from_numpy(input_audio_feats).unsqueeze(0).float().to(self.device) 
 
                     if self.opt.feature_decoder == 'WaveNet':
                         preds = self.Audio2Headpose.forward(history_headpose, input_audio_feats) 
@@ -178,22 +178,20 @@ class Audio2HeadposeModel(BaseModel):
                         preds = self.Audio2Headpose.forward(input_audio_feats) 
                          
                     if opt.loss == 'GMM':
-                        pred_data = Sample_GMM(preds, self.Audio2Headpose.module.WaveNet.ncenter, 
-                                               self.Audio2Headpose.module.WaveNet.ndim, 
-                                               sigma_scale=sigma_scale)  
+                        pred_data = Sample_GMM(preds, opt.A2H_GMM_ncenter, opt.A2H_GMM_ndim, sigma_scale=sigma_scale)  
                     elif opt.loss == 'L2':
                         pred_data = preds
                         
                     # get predictions
                     pred_headpose[i] = pred_data[0,0].cpu().detach().numpy()  
-                    history_headpose = torch.cat((history_headpose[:,1:,:], pred_data), dim=1)  # add in time-axis                
+                    history_headpose = torch.cat((history_headpose[:,1:,:], pred_data.to(self.device)), dim=1)  # add in time-axis                
     
             return pred_headpose
         
         elif opt.feature_decoder == 'LSTM':
             self.Audio2Headpose.eval()
             with torch.no_grad():
-                input = torch.from_numpy(audio_feats).unsqueeze(0).float().cuda() 
+                input = torch.from_numpy(audio_feats).unsqueeze(0).float().to(self.device)
                 preds = self.Audio2Headpose.forward(input)
                 if opt.loss == 'GMM':
                     pred_data = Sample_GMM(preds, opt.A2H_GMM_ncenter, opt.A2H_GMM_ndim, sigma_scale=sigma_scale) 
