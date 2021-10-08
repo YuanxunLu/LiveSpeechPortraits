@@ -1,10 +1,10 @@
 tqdm
 librosa==0.7.0
 scikit_image
-opencv_python
+opencv_python==4.4.0.40
 scipy
 dominate
-albumentations
+albumentations==0.5.2
 numpy
 beautifulsoup4
 scikit-image
