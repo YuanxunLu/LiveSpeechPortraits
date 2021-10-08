@@ -51,12 +51,13 @@ if __name__ == '__main__':
     parser.add_argument('--id', default='May', help="person name, e.g. Obama1, Obama2, May, Nadella, McStay")
     parser.add_argument('--driving_audio', default='./data/input/00083.wav', help="path to driving audio")
     parser.add_argument('--save_intermediates', default=0, help="whether to save intermediate results")
-    
+    parser.add_argument('--device', type=str, default='cuda', help='use cuda for GPU or use cpu for CPU')
     
    
     ############################### I/O Settings ##############################
     # load config files
     opt = parser.parse_args()
+    device = torch.device(opt.device)
     with open(join('./config/', opt.id + '.yaml')) as f:
         config = yaml.load(f)
     data_root = join('./data/', opt.id)
@@ -91,7 +92,7 @@ if __name__ == '__main__':
         output = A.pytorch.transforms.ToTensor(normalize={'mean':(0.5,0.5,0.5), 
                                                           'std':(0.5,0.5,0.5)})(image=output)['image']
         img_candidates.append(output)
-    img_candidates = torch.cat(img_candidates).unsqueeze(0).cuda()   
+    img_candidates = torch.cat(img_candidates).unsqueeze(0).to(device) 
     
     # shoulders
     shoulders = np.load(join(data_root, 'normalized_shoulder_points.npy'))
@@ -106,7 +107,7 @@ if __name__ == '__main__':
     # load reconstruction data
     scale = sio.loadmat(join(data_root, 'id_scale.mat'))['scale'][0,0]
     Audio2Mel_torch = audio_funcs.Audio2Mel(n_fft=512, hop_length=int(16000/120), win_length=int(16000/60), sampling_rate=16000, 
-                                            n_mel_channels=80, mel_fmin=90, mel_fmax=7600.0).cuda()
+                                            n_mel_channels=80, mel_fmin=90, mel_fmax=7600.0).to(device)
     
     
     
@@ -134,6 +135,9 @@ if __name__ == '__main__':
     Renderopt.dataroot = config['dataset_params']['root']
     Renderopt.load_epoch = config['model_params']['Image2Image']['ckp_path']
     Renderopt.size = config['model_params']['Image2Image']['size']
+    ## GPU or CPU
+    if opt.device == 'cpu':
+        Featopt.gpu_ids = Headopt.gpu_ids = Renderopt.gpu_ids = []
     
 
     
@@ -144,7 +148,8 @@ if __name__ == '__main__':
                             config['model_params']['APC']['num_layers'],
                             config['model_params']['APC']['residual'])
     APC_model.load_state_dict(torch.load(config['model_params']['APC']['ckp_path']), strict=False)
-    APC_model.cuda()
+    if opt.device == 'cuda':
+        APC_model.cuda() 
     APC_model.eval()
     print('---------- Loading Model: {} -------------'.format(Featopt.task))
     Audio2Feature = create_model(Featopt)   
@@ -155,7 +160,10 @@ if __name__ == '__main__':
     Audio2Headpose.setup(Headopt)
     Audio2Headpose.eval()              
     if Headopt.feature_decoder == 'WaveNet':
-        Headopt.A2H_receptive_field = Audio2Headpose.Audio2Headpose.module.WaveNet.receptive_field
+        if opt.device == 'cuda':
+            Headopt.A2H_receptive_field = Audio2Headpose.Audio2Headpose.module.WaveNet.receptive_field
+        else:
+            Headopt.A2H_receptive_field = Audio2Headpose.Audio2Headpose.WaveNet.receptive_field
     print('---------- Loading Model: {} -------------'.format(Renderopt.task))
     facedataset = create_dataset(Renderopt) 
     Feature2Face = create_model(Renderopt)
@@ -178,7 +186,7 @@ if __name__ == '__main__':
     mel_nframe = mel80.shape[0]
     with torch.no_grad():
         length = torch.Tensor([mel_nframe])
-        mel80_torch = torch.from_numpy(mel80.astype(np.float32)).cuda().unsqueeze(0)
+        mel80_torch = torch.from_numpy(mel80.astype(np.float32)).to(device).unsqueeze(0)
         hidden_reps = APC_model.forward(mel80_torch, length)[0]   # [mel_nframe, 512]
         hidden_reps = hidden_reps.cpu().numpy()
     audio_feats = hidden_reps
@@ -254,7 +262,7 @@ if __name__ == '__main__':
         current_pred_feature_map = facedataset.dataset.get_data_test_mode(pred_landmarks[ind], 
                                                                           pred_shoulders[ind], 
                                                                           facedataset.dataset.image_pad)
-        input_feature_maps = current_pred_feature_map.unsqueeze(0).cuda()
+        input_feature_maps = current_pred_feature_map.unsqueeze(0).to(device)
         pred_fake = Feature2Face.inference(input_feature_maps, img_candidates) 
         # save results
         visual_list = [('pred', util.tensor2im(pred_fake[0]))]
