@@ -53,10 +53,12 @@ pip install -r requirements.txt
 - Run the demo:
 
   ```
-  python demo.py --id May --driving_audio ./data/Input/00083.wav
+  python demo.py --id May --driving_audio ./data/Input/00083.wav --device cuda
   ```
 
   Results can be found under the `results` folder.
+
+  
 
 
 
