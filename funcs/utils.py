@@ -56,12 +56,15 @@ class camera(object):
         self.cy = scale * self.cy + transform_matrix[1, 2]
 
 
-Audio2Mel_torch = audio_funcs.Audio2Mel(n_fft=512, hop_length=int(16000/120), win_length=int(16000/60), sampling_rate=16000, 
-                                        n_mel_channels=80, mel_fmin=90, mel_fmax=7600.0).cuda()
 
-def compute_mel_one_sequence(audio, hop_length=int(16000/120), winlen=1/60, winstep=0.5/60, sr=16000, fps=60):
+
+def compute_mel_one_sequence(audio, hop_length=int(16000/120), winlen=1/60, winstep=0.5/60, sr=16000, fps=60, device='cpu'):
     ''' compute mel for an audio sequence. 
     '''
+    device = torch.device(device)
+    Audio2Mel_torch = audio_funcs.Audio2Mel(n_fft=512, hop_length=int(16000/120), win_length=int(16000/60), sampling_rate=16000, 
+                                            n_mel_channels=80, mel_fmin=90, mel_fmax=7600.0).to(device)
+        
     nframe = int(audio.shape[0] / 16000 * 60)
     mel_nframe = 2 * nframe
     mel_frame_len = int(sr * winlen)
@@ -74,8 +77,8 @@ def compute_mel_one_sequence(audio, hop_length=int(16000/120), winlen=1/60, wins
         audio_clip = audio[st : st + mel_frame_len]
         if len(audio_clip) < mel_frame_len:
             audio_clip = np.concatenate([audio_clip, np.zeros([mel_frame_len - len(audio_clip)])])
-        audio_clip_cuda = torch.from_numpy(audio_clip).unsqueeze(0).unsqueeze(0).cuda().float()
-        mel80s[i] = Audio2Mel_torch(audio_clip_cuda).cpu().numpy()[0].T   # [1, 80]
+        audio_clip_device = torch.from_numpy(audio_clip).unsqueeze(0).unsqueeze(0).to(device).float()
+        mel80s[i] = Audio2Mel_torch(audio_clip_device).cpu().numpy()[0].T   # [1, 80]
     
     return mel80s
              
