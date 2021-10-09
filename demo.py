@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser.add_argument('--id', default='May', help="person name, e.g. Obama1, Obama2, May, Nadella, McStay")
     parser.add_argument('--driving_audio', default='./data/input/00083.wav', help="path to driving audio")
     parser.add_argument('--save_intermediates', default=0, help="whether to save intermediate results")
-    parser.add_argument('--device', type=str, default='cuda', help='use cuda for GPU or use cpu for CPU')
+    parser.add_argument('--device', type=str, default='cpu', help='use cuda for GPU or use cpu for CPU')
     
    
     ############################### I/O Settings ##############################
@@ -106,8 +106,8 @@ if __name__ == '__main__':
     
     # load reconstruction data
     scale = sio.loadmat(join(data_root, 'id_scale.mat'))['scale'][0,0]
-    Audio2Mel_torch = audio_funcs.Audio2Mel(n_fft=512, hop_length=int(16000/120), win_length=int(16000/60), sampling_rate=16000, 
-                                            n_mel_channels=80, mel_fmin=90, mel_fmax=7600.0).to(device)
+    # Audio2Mel_torch = audio_funcs.Audio2Mel(n_fft=512, hop_length=int(16000/120), win_length=int(16000/60), sampling_rate=16000, 
+    #                                         n_mel_channels=80, mel_fmin=90, mel_fmax=7600.0).to(device)
     
     
     
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     
     #### 1. compute APC features   
     print('1. Computing APC features...')                    
-    mel80 = utils.compute_mel_one_sequence(audio)
+    mel80 = utils.compute_mel_one_sequence(audio, device=opt.device)
     mel_nframe = mel80.shape[0]
     with torch.no_grad():
         length = torch.Tensor([mel_nframe])
