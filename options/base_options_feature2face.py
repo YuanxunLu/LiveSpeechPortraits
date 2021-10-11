@@ -80,8 +80,8 @@ class BaseOptions():
         self.opt.gpu_ids = self.parse_str(self.opt.gpu_ids)
         
         # set gpu ids
-        if len(self.opt.gpu_ids) > 0:
-            torch.cuda.set_device(self.opt.gpu_ids[0])
+        # if len(self.opt.gpu_ids) > 0:
+        #     torch.cuda.set_device(self.opt.gpu_ids[0])
         
         # set datasets
         datasets = self.opt.dataset_names.split(',')
