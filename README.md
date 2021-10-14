@@ -14,6 +14,7 @@ This repository contains the implementation of the following paper:
 
 Figure 1. Given an arbitrary input audio stream, our system generates personalized and photorealistic talking-head animation in real-time. Right: May and Obama are driven by the same utterance but present different speaking characteristics.
 
+<a href="https://replicate.ai/yuanxunlu/livespeechportraits"><img src="https://img.shields.io/static/v1?label=Replicate&message=Demo and Docker Image&color=blue"></a>
 
 
 ## Requirements

@@ -1,0 +1,30 @@
+build:
+  gpu: true
+  python_version: "3.8"
+  system_packages:
+    - "libgl1-mesa-glx"
+    - "libglib2.0-0"
+    - "libsox-fmt-mp3"
+  python_packages:
+    - "torch==1.7.1"
+    - "torchvision==0.8.2"
+    - "numpy==1.18.1"
+    - "ipython==7.21.0"
+    - "Pillow==8.3.1"
+    - "scikit-image==0.18.3"
+    - "librosa==0.7.2"
+    - "tqdm==4.62.3"
+    - "scipy==1.7.1"
+    - "dominate==2.6.0"
+    - "albumentations==0.5.2"
+    - "beautifulsoup4==4.10.0"
+    - "sox==1.4.1"
+    - "h5py==3.4.0"
+    - "numba==0.48"
+    - "moviepy==1.0.3"
+  run:
+    - apt update -y && apt-get install ffmpeg -y
+    - apt-get install sox libsox-fmt-mp3 -y
+    - pip install opencv-python==4.1.2.30
+
+predict: "predict.py:Predictor"
