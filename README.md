@@ -61,7 +61,7 @@ pip install -r requirements.txt
 
 - **(New!) Docker and Web Demo**
 
-  We are really grateful to [Andreas](https://github.com/andreasjansson) from [Replicate](https://replicate.ai/home) for his amazing job to make the web demo! Now you can run the [Demo](https://replicate.ai/yuanxunlu/livespeechportraits) on the browser!
+  We are really grateful to [Andreas](https://github.com/andreasjansson) from [Replicate](https://replicate.ai/home) for his amazing job to make the web demo! Now you can run the [Demo](https://replicate.ai/yuanxunlu/livespeechportraits) on the browser.
 
   
 
@@ -91,6 +91,7 @@ If you find this project useful for your research, please consider citing:
 
 - This repo was built based on the framework of [pix2pix-pytorch](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix).
 - Thanks the authors of [MakeItTalk](https://github.com/adobe-research/MakeItTalk), [ATVG](https://github.com/lelechen63/ATVGnet), [RhythmicHead](https://github.com/lelechen63/Talking-head-Generation-with-Rhythmic-Head-Motion), [Speech-Driven Animation](https://github.com/DinoMan/speech-driven-animation) for making their excellent work and codes publicly available.
+- Thanks [Andreas](https://github.com/andreasjansson) for the efforts of the web demo.
 
 
 
