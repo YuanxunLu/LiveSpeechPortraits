@@ -72,7 +72,7 @@ pip install -r requirements.txt
 If you find this project useful for your research, please consider citing:
 
 ```
-@inproceedings{lu2021live,
+@article{lu2021live,
  author = {Lu, Yuanxun and Chai, Jinxiang and Cao, Xun},
  title = {{Live Speech Portraits}: Real-Time Photorealistic Talking-Head Animation},
  journal = {ACM Transactions on Graphics},
