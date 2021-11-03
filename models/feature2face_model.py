@@ -35,7 +35,7 @@ class Feature2FaceModel(BaseModel):
         # define only during training time
         if self.isTrain:
             # define losses names
-            self.loss_names_G = ['L1', 'VGG', 'Style', 'loss_G_GAN']    
+            self.loss_names_G = ['L1', 'VGG', 'Style', 'loss_G_GAN', 'loss_G_FM']    
             # criterion
             self.criterionMaskL1 = MaskedL1Loss().cuda()
             self.criterionL1 = nn.L1Loss().cuda()
@@ -62,7 +62,7 @@ class Feature2FaceModel(BaseModel):
             # discriminator setting
             if not opt.no_discriminator:
                 self.criterionGAN = GANLoss(opt.gan_mode, tensor=self.Tensor) 
-                self.loss_names_D = ['D_real', 'D_fake', 'D_FM']
+                self.loss_names_D = ['D_real', 'D_fake']
                 # initialize optimizer D
                 if opt.TTUR:                
                     beta1, beta2 = 0, 0.9
@@ -129,7 +129,9 @@ class Feature2FaceModel(BaseModel):
     def backward_G(self):
         """Calculate GAN and other loss for the generator"""
         # GAN loss
+        real_AB = torch.cat((self.input_feature_maps, self.tgt_image), dim=1)
         fake_AB = torch.cat((self.input_feature_maps, self.fake_pred), dim=1)
+        pred_real = self.Feature2Face_D(real_AB)
         pred_fake = self.Feature2Face_D(fake_AB)
         loss_G_GAN = self.criterionGAN(pred_fake, True)
         # L1, vgg, style loss
@@ -138,17 +140,20 @@ class Feature2FaceModel(BaseModel):
         loss_vgg, loss_style = self.criterionVGG(self.fake_pred, self.tgt_image, style=True)
         loss_vgg = torch.mean(loss_vgg) * self.opt.lambda_feat 
         loss_style = torch.mean(loss_style) * self.opt.lambda_feat 
+        # feature matching loss
+        loss_FM = self.compute_FeatureMatching_loss(pred_fake, pred_real)
+        
         # combine loss and calculate gradients
         
         if not self.opt.fp16:
-            self.loss_G = loss_G_GAN + loss_l1 + loss_vgg + loss_style #+ loss_maskL1
+            self.loss_G = loss_G_GAN + loss_l1 + loss_vgg + loss_style + loss_FM #+ loss_maskL1
             self.loss_G.backward()
         else:
             with autocast():
-                self.loss_G = loss_G_GAN + loss_l1 + loss_vgg + loss_style #+ loss_maskL1
+                self.loss_G = loss_G_GAN + loss_l1 + loss_vgg + loss_style + loss_FM #+ loss_maskL1
             self.scaler.scale(self.loss_G).backward()
         
-        self.loss_dict = {**self.loss_dict, **dict(zip(self.loss_names_G, [loss_l1, loss_vgg, loss_style, loss_G_GAN]))}
+        self.loss_dict = {**self.loss_dict, **dict(zip(self.loss_names_G, [loss_l1, loss_vgg, loss_style, loss_G_GAN, loss_FM]))}
 
         
     
@@ -162,12 +167,10 @@ class Feature2FaceModel(BaseModel):
         with autocast():
             loss_D_real = self.criterionGAN(pred_real, True) * 2
             loss_D_fake = self.criterionGAN(pred_fake, False)
-            # Feature matching loss
-            loss_D_FM = self.compute_FeatureMatching_loss(pred_fake, pred_real)
         
-        self.loss_D = (loss_D_fake + loss_D_real) * 0.5 + loss_D_FM
+        self.loss_D = (loss_D_fake + loss_D_real) * 0.5 
         
-        self.loss_dict = dict(zip(self.loss_names_D, [loss_D_real, loss_D_fake, loss_D_FM]))   
+        self.loss_dict = dict(zip(self.loss_names_D, [loss_D_real, loss_D_fake]))   
         
         if not self.opt.fp16:
             self.loss_D.backward()
@@ -177,15 +180,15 @@ class Feature2FaceModel(BaseModel):
     
     def compute_FeatureMatching_loss(self, pred_fake, pred_real):
         # GAN feature matching loss
-        loss_D_FM = torch.zeros(1).cuda()
+        loss_FM = torch.zeros(1).cuda()
         feat_weights = 4.0 / (self.opt.n_layers_D + 1)
         D_weights = 1.0 / self.opt.num_D
         for i in range(min(len(pred_fake), self.opt.num_D)):
             for j in range(len(pred_fake[i])):
-                loss_D_FM += D_weights * feat_weights * \
+                loss_FM += D_weights * feat_weights * \
                     self.criterionL1(pred_fake[i][j], pred_real[i][j].detach()) * self.opt.lambda_feat
         
-        return loss_D_FM
+        return loss_FM
     
     
     
