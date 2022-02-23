@@ -63,7 +63,7 @@ pip install -r requirements.txt
 
   We are really grateful to [Andreas](https://github.com/andreasjansson) from [Replicate](https://replicate.ai/home) for his amazing job to make the web demo! Now you can run the [Demo](https://replicate.ai/yuanxunlu/livespeechportraits) on the browser.
   
-- **For the orginal link of these videos, please check issue [#7](https://github.com/YuanxunLu/LiveSpeechPortraits/issues/7).**
+- **For the orginal links of these videos, please check issue [#7](https://github.com/YuanxunLu/LiveSpeechPortraits/issues/7).**
 
   
 
