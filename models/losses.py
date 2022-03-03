@@ -105,8 +105,11 @@ def Sample_GMM(gmm_params, ncenter, ndim, weight_smooth = 0.0, sigma_scale = 0.0
     current_sample = current_sample * selected_sigma + selected_mu
     # cur_sample = sel_mu
 #    return  current_sample.unsqueeze(1).cuda()
-    return  current_sample.reshape(b, T, -1).cuda()
 
+    if torch.cuda.is_available():
+        return  current_sample.reshape(b, T, -1).cuda()
+    else:
+        return  current_sample.reshape(b, T, -1)
 
 
 
