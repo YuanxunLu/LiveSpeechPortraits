@@ -48,7 +48,7 @@ class Predictor(BasePredictor):
         opt.driving_audio = str(driving_audio)
         opt.id = talking_head
         with open(join('config', opt.id + '.yaml')) as f:
-            config = yaml.load(f)
+            config = yaml.safe_load(f)
         data_root = join('data', opt.id)
 
         ############################ Hyper Parameters #############################
