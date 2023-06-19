@@ -147,7 +147,7 @@ if __name__ == '__main__':
                             config['model_params']['APC']['hidden_size'],
                             config['model_params']['APC']['num_layers'],
                             config['model_params']['APC']['residual'])
-    APC_model.load_state_dict(torch.load(config['model_params']['APC']['ckp_path']), strict=False)
+    APC_model.load_state_dict(torch.load(config['model_params']['APC']['ckp_path'], map_location=device), strict=False)
     if opt.device == 'cuda':
         APC_model.cuda() 
     APC_model.eval()
